@@ -34,6 +34,12 @@
       </button>
       <p>Response: {{ resOnCallHttpFunctionAdmin }}</p>
     </section>
+
+    <section v-if="isLoggedIn" class="section">
+      <button class="app-btn" @click="insertArticle()">
+        Insert Article Data
+      </button>
+    </section>
   </div>
 </template>
 
@@ -43,6 +49,7 @@ import '@nuxtjs/axios'
 import firebase from 'firebase'
 import auth from '~/plugins/firebase/auth'
 import functions from '~/plugins/firebase/functions'
+import db from '~/plugins/firebase/db'
 
 @Component
 export default class sample extends Vue {
@@ -83,10 +90,10 @@ export default class sample extends Vue {
   async http() {
     this.isWaiting = true
     const url =
-      process.env.FB_EMULATOR_ORIGIN &&
+      process.env.FB_FUNCTIONS_EMULATOR_ORIGIN &&
       process.env.FB_PROJECT_ID &&
       process.env.FB_REGION
-        ? `${process.env.FB_EMULATOR_ORIGIN}/${process.env.FB_PROJECT_ID}/${process.env.FB_REGION}/httpFunction`
+        ? `${process.env.FB_FUNCTIONS_EMULATOR_ORIGIN}/${process.env.FB_PROJECT_ID}/${process.env.FB_REGION}/httpFunction`
         : 'https://asia-northeast1-labo-47b9e.cloudfunctions.net/httpFunction'
     const res = await this.$axios.$get(url)
     this.resHttp = res
@@ -111,6 +118,26 @@ export default class sample extends Vue {
     this.isWaiting = true
     const res = await functions.httpsCallable('onCallHttpFunctionAdmin')({})
     this.resOnCallHttpFunctionAdmin = res
+    this.isWaiting = false
+  }
+
+  async insertArticle() {
+    this.isWaiting = true
+    await db
+      .collection('articles')
+      .add({
+        title: 'What is Lorem Ipsum?',
+        content: [
+          'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
+          "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+          'It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.',
+          'It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.'
+        ],
+        thumbnailUrl: 'http://placekitten.com/600/400'
+      })
+      .catch((e) => {
+        console.log(e)
+      })
     this.isWaiting = false
   }
 }
