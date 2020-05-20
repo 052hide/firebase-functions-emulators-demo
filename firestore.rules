@@ -9,7 +9,7 @@ service cloud.firestore {
       allow read, write: if false;
     }
   	match /articles/{document=**} {
-      allow read: if isSignedIn();
+      allow read, write: if isSignedIn();
     }
   	match /users/{user} {
       function isOwner() {
