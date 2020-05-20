@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  	match /articles/{document=**} {
+      allow read: if isSignedIn();
+    }
+  	match /users/{user} {
+      function isOwner() {
+        return isSignedIn() && user == request.auth.uid;
+      }
+      allow read: if isOwner();
+    }
+  }
+}
